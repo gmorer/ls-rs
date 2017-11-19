@@ -81,11 +81,14 @@ permissions: permissions,
 			}
 		}
 	}
+	pub fn cmp(&self, f: &File) -> std::cmp::Ordering {
+		self.name.cmp(&f.name)
+	}
 }
 
 impl fmt::Display for File {
 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "{} {} {} {} {:?} {}", self.permissions, self.uid, self.gid, self.size,
-				self.modified, self.name)
+		write!(f, "{} {} {} {} time {}", self.permissions, self.uid, self.gid, self.size,
+				/*self.modified,*/ self.name)
 	}
 }

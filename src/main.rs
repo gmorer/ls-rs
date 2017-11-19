@@ -21,6 +21,8 @@ fn main() {
 						files.push(file::File::new(file));
 					}
 				}
+				//sort
+				files.sort_by(|a, b| a.cmp(b));
 				for file in files {
 					println!("{}", file);
 				}
