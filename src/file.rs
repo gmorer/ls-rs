@@ -1,3 +1,5 @@
+extern crate time;
+
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::fs::MetadataExt;
 use std::ffi::OsStr;
@@ -5,7 +7,7 @@ use std::fmt;
 use std;
 
 #[derive(Debug)]
-pub struct File {
+pub struct File<'a> {
     name: String,
     permissions: String,
     block: u64,
@@ -14,10 +16,11 @@ pub struct File {
     uid: u32,
     gid: u32,
     modified: i64,
+    time: time::TmFmt<'a>,
 }
 
-impl File {
-    pub fn new(file: std::fs::DirEntry) -> File {
+impl File<'a> {
+    pub fn new(file: std::fs::DirEntry) -> File<'a> {
         let mut permissions = String::from("");
         let mut bit = 256;
 
@@ -57,6 +60,7 @@ impl File {
                     .to_string_lossy()
                     .into_owned(),
                 permissions: permissions,
+                time: time::Timespec::new(data.mtime(), 0).at_utc().ctime(),
                 block: data.blocks(),
                 nlink: data.nlink(),
                 size: data.len(),
@@ -75,6 +79,7 @@ impl File {
                     .into_owned(),
                 permissions: permissions,
                 nlink: 0,
+                time: time::get_time().ctime(),
                 block: 0,
                 size: 0,
                 uid: 0,
