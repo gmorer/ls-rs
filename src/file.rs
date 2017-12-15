@@ -7,7 +7,7 @@ use std::fmt;
 use std;
 
 #[derive(Debug)]
-pub struct File<'a> {
+pub struct File {
     name: String,
     permissions: String,
     block: u64,
@@ -16,11 +16,11 @@ pub struct File<'a> {
     uid: u32,
     gid: u32,
     modified: i64,
-    time: time::TmFmt<'a>,
+    time : String
 }
 
-impl File<'a> {
-    pub fn new(file: std::fs::DirEntry) -> File<'a> {
+impl File {
+    pub fn new(file: std::fs::DirEntry) -> File {
         let mut permissions = String::from("");
         let mut bit = 256;
 
@@ -35,7 +35,8 @@ impl File<'a> {
                 permissions.push('?');
             }
             loop {
-                if (bit == 256 || bit == 32 || bit == 4) && data.permissions().mode() & bit != 0 {
+                if (bit == 256 || bit == 32 || bit == 4) &&
+					data.permissions().mode() & bit != 0 {
                     permissions.push('r');
                 } else if (bit == 128 || bit == 16 || bit == 2) &&
                            data.permissions().mode() & bit != 0
@@ -60,7 +61,7 @@ impl File<'a> {
                     .to_string_lossy()
                     .into_owned(),
                 permissions: permissions,
-                time: time::Timespec::new(data.mtime(), 0).at_utc().ctime(),
+                time: time::strftime("%b %d %R", &time::at_utc(time::Timespec::new(data.mtime(), 0))).unwrap(),
                 block: data.blocks(),
                 nlink: data.nlink(),
                 size: data.len(),
@@ -79,7 +80,7 @@ impl File<'a> {
                     .into_owned(),
                 permissions: permissions,
                 nlink: 0,
-                time: time::get_time().ctime(),
+                time: "?????????????".to_string(),
                 block: 0,
                 size: 0,
                 uid: 0,
@@ -104,7 +105,7 @@ impl fmt::Display for File {
             self.uid,
             self.gid,
             self.size,
-            self.modified,
+            self.time,
             self.name
         )
     }
