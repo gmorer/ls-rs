@@ -5,3 +5,4 @@ authors = ["tet <gmorer@student.42.fr>"]
 
 [dependencies]
 time = "0.1"
+libc = "*"

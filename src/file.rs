@@ -1,9 +1,13 @@
 extern crate time;
+extern crate libc;
 
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::fs::MetadataExt;
+use std::ffi::CStr;
 use std::ffi::OsStr;
 use std::fmt;
+use std::mem;
+use std::ptr;
 use std;
 
 #[derive(Debug)]
@@ -13,8 +17,8 @@ pub struct File {
     block: u64,
     nlink: u64,
     size: u64,
-    uid: u32,
-    gid: u32,
+    owner: String,
+    group: String,
     modified: i64,
     time : String
 }
@@ -55,6 +59,44 @@ fn read_permission(data: &std::fs::Metadata) -> String {
 		permissions
 }
 
+fn get_groupename(gid :u32) -> String {
+	unsafe{
+		let mut rslt = ptr::null_mut();
+		let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {
+			n if n < 0 => 512 as usize,
+			n => n as usize,
+		};
+		let mut buf = Vec::with_capacity(amt);
+		let mut passwd: libc::group = mem::zeroed();
+		match libc::getgrgid_r(gid, &mut passwd, buf.as_mut_ptr(),
+			buf.capacity() as libc::size_t, &mut rslt) {
+			0 if !rslt.is_null() => {
+				CStr::from_ptr(passwd.gr_name).to_str().unwrap().to_owned()
+			}
+			_=> "????".to_string()
+		}
+	}
+}
+
+fn get_username(uid :u32) -> String {
+	unsafe{
+		let mut rslt = ptr::null_mut();
+		let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {
+			n if n < 0 => 512 as usize,
+			n => n as usize,
+		};
+		let mut buf = Vec::with_capacity(amt);
+		let mut passwd: libc::passwd = mem::zeroed();
+		match libc::getpwuid_r(uid, &mut passwd, buf.as_mut_ptr(),
+			buf.capacity() as libc::size_t, &mut rslt) {
+			0 if !rslt.is_null() => {
+				CStr::from_ptr(passwd.pw_name).to_str().unwrap().to_owned()
+			}
+			_=> "????".to_string()
+		}
+	}
+}
+
 impl File {
     pub fn new(file: std::fs::DirEntry) -> File {
         if let Ok(data) = file.metadata() {
@@ -69,8 +111,8 @@ impl File {
                 block: data.blocks(),
                 nlink: data.nlink(),
                 size: data.len(),
-                uid: data.uid(),
-                gid: data.gid(),
+                owner: get_username(data.uid()),
+                group: get_groupename(data.gid()),
                 modified: data.mtime(),
             };
         } else {
@@ -86,8 +128,8 @@ impl File {
                 time: "?????????????".to_string(),
                 block: 0,
                 size: 0,
-                uid: 0,
-                gid: 0,
+                owner: "????".to_string(),
+                group: "????".to_string(),
                 modified: 0,
             };
         }
@@ -105,8 +147,8 @@ impl fmt::Display for File {
             "{} {} {} {} {} {} {}",
             self.permissions,
             self.nlink,
-            self.uid,
-            self.gid,
+            self.owner,
+            self.group,
             self.size,
             self.time,
             self.name
