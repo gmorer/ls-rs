@@ -4,13 +4,12 @@ use std::convert::From;
 use std::error::Error;
 
 pub mod file;
+pub mod option;
 
 fn main() {
-
-    let mut paths: Vec<PathBuf> = args().skip(1).map(From::from).collect();
-
+	let (option, option_len) = option::option(args());
+    let mut paths: Vec<PathBuf> = args().skip(1 + option_len).map(From::from).collect();
     paths.sort();
-
     for path in paths {
         match std::fs::read_dir(path.as_path()) {
             Ok(dir) => {
@@ -21,10 +20,9 @@ fn main() {
                         files.push(file::File::new(file));
                     }
                 }
-                //sort
                 files.sort_by(|a, b| a.cmp(b));
                 for file in files {
-                    //println!("{:#?}", file);
+					// TODO real print
                     println!("{}", file);
                 }
             }
