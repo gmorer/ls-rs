@@ -27,7 +27,7 @@ fn main() {
                 }
             }
             Err(err) => {
-                println!("ls-rs: cannot access '{:?}': {}", path, err.description());
+                println!("ls-rs: cannot access {:?}: {}", path, err.description());
 
             }
         }
