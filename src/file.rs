@@ -1,6 +1,10 @@
 extern crate time;
 extern crate libc;
 
+//pub mod options;
+
+use option;
+
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::fs::MetadataExt;
 use std::ffi::CStr;
@@ -134,8 +138,20 @@ impl File {
             };
         }
     }
-    pub fn cmp(&self, f: &File) -> std::cmp::Ordering {
-        self.name.cmp(&f.name)
+    pub fn cmp(&self, f: &File, options: u8) -> std::cmp::Ordering {
+		let mut rslt: std::cmp::Ordering = std::cmp::Ordering::Equal;
+		if option::option_t(options)  {
+			rslt = f.modified.cmp(&self.modified);
+		} else if option::option_S(options)  {
+			rslt = f.size.cmp(&self.size);
+		}
+		if rslt == std::cmp::Ordering::Equal {
+        	rslt = self.name.cmp(&f.name);
+		}
+		if option::option_r(options) {
+			return rslt.reverse()
+		}
+		rslt
     }
 }
 
