@@ -8,7 +8,6 @@ use option;
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::fs::MetadataExt;
 use std::ffi::CStr;
-use std::ffi::OsStr;
 use std::fmt;
 use std::mem;
 use std::ptr;
@@ -105,9 +104,7 @@ impl File {
     pub fn new(file: std::fs::DirEntry) -> File {
         if let Ok(data) = file.metadata() {
             return File {
-                name: file.path()
-                    .file_name()
-                    .unwrap_or(OsStr::new("??????????"))
+                name: file.file_name()
                     .to_string_lossy()
                     .into_owned(),
                 permissions: read_permission(&data),
@@ -122,9 +119,7 @@ impl File {
         } else {
             println!("Couldn't read metadata for {}", file.path().display());
             return File {
-                name: file.path()
-                    .file_name()
-                    .unwrap_or(OsStr::new("??????????"))
+                name: file.file_name()
                     .to_string_lossy()
                     .into_owned(),
                 permissions: "??????????".to_string(),
@@ -138,6 +133,8 @@ impl File {
             };
         }
     }
+	pub fn is_directory(&self) -> bool {self.permissions.starts_with("d")}
+	pub fn name(&self) -> &String {&self.name}
     pub fn cmp(&self, f: &File, options: u8) -> std::cmp::Ordering {
 		let mut rslt: std::cmp::Ordering = std::cmp::Ordering::Equal;
 		if option::option_t(options)  {
