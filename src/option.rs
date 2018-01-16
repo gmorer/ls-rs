@@ -50,7 +50,7 @@ pub fn option(args: std::env::Args) -> (u8, usize) {
 
 pub fn option_l(options: u8) -> bool { options & (1 << 0) > 0 }
 pub fn option_a(options: u8) -> bool { options & (1 << 1) > 0 }
-pub fn option_R(options: u8) -> bool { options & (1 << 2) > 0 }
+pub fn option_rr(options: u8) -> bool { options & (1 << 2) > 0 }
 pub fn option_t(options: u8) -> bool { options & (1 << 3) > 0 }
 pub fn option_r(options: u8) -> bool { options & (1 << 4) > 0 }
-pub fn option_S(options: u8) -> bool { options & (1 << 5) > 0 }
+pub fn option_ss(options: u8) -> bool { options & (1 << 5) > 0 }

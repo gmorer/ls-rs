@@ -1,3 +1,6 @@
+#[macro_use]
+extern crate lazy_static;
+
 use std::env::args;
 use std::path::PathBuf;
 use std::convert::From;
@@ -5,27 +8,11 @@ use std::error::Error;
 
 pub mod file;
 pub mod option;
-
-fn print_file(files: Vec<file::File>, old_path: PathBuf, options: u8) -> () {
-	let mut new_paths = std::vec::Vec::new();
-
-	for file in files {
-		if option::option_R(options) && file.is_directory() {
-			let mut new_path = old_path.clone();
-			new_path.push(file.name());
-			new_paths.push(new_path);
-		}
-		// TODO real print
-		println!("{}", file);
-	}
-	for path in new_paths
-	{
-		println!("");
-		read_path(path, options);
-	}
-}
+pub mod print;
 
 fn read_path(path: PathBuf, options: u8) -> () {
+    let new_paths;
+
 	match std::fs::read_dir(path.as_path()) {
 		Ok(dir) => {
 			let mut files: Vec<file::File> = std::vec::Vec::new();
@@ -42,10 +29,15 @@ fn read_path(path: PathBuf, options: u8) -> () {
 				}
 			}
 			files.sort_by(|a, b| a.cmp(b, options));
-			print_file(files, path, options);
+			new_paths = print::print_file(files, path, options);
+            if option::option_rr(options) {
+                for path in new_paths {
+                    read_path(path, options);
+                }
+            }
 		}
 		Err(err) => {
-			println!("ls-rs: cannot access {:?}: {}", path, err.description());
+			eprintln!("ls-rs: cannot access {:?}: {}", path, err.description());
 		}
 	};
 }

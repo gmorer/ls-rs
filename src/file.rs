@@ -63,6 +63,7 @@ fn read_permission(data: &std::fs::Metadata) -> String {
 }
 
 fn get_groupename(gid :u32) -> String {
+    // futur optimistation static Mutex<HasMap<u32, String>>
 	unsafe{
 		let mut rslt = ptr::null_mut();
 		let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {
@@ -82,6 +83,7 @@ fn get_groupename(gid :u32) -> String {
 }
 
 fn get_username(uid :u32) -> String {
+    // futur optimistation static Mutex<HasMap<u32, String>>
 	unsafe{
 		let mut rslt = ptr::null_mut();
 		let amt = match libc::sysconf(libc::_SC_GETPW_R_SIZE_MAX) {
@@ -117,7 +119,7 @@ impl File {
                 modified: data.mtime(),
             };
         } else {
-            println!("Couldn't read metadata for {}", file.path().display());
+            eprintln!("Couldn't read metadata for {}", file.path().display());
             return File {
                 name: file.file_name()
                     .to_string_lossy()
@@ -139,7 +141,7 @@ impl File {
 		let mut rslt: std::cmp::Ordering = std::cmp::Ordering::Equal;
 		if option::option_t(options)  {
 			rslt = f.modified.cmp(&self.modified);
-		} else if option::option_S(options)  {
+		} else if option::option_ss(options)  {
 			rslt = f.size.cmp(&self.size);
 		}
 		if rslt == std::cmp::Ordering::Equal {
