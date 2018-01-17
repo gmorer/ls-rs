@@ -58,12 +58,13 @@ fn print_small(files: Vec<file::File>, old_path: PathBuf, options: u8) -> Vec<Pa
         match *TERM_SIZE {
             Some(size) => {
                 let col = size / (max_size + 10);
-                print!("{:<lenght$}    ", file.name(), lenght=max_size);
-                if index % col == 0 {
-                    println!("");
+                if (index + 1) % col == 0 {
+                    println!("{}", file.name());
+                } else {
+                    print!("{:<lenght$}    ", file.name(), lenght=max_size);
                 }
             },
-            None => print!("{:>lenght$}    ", file.name(), lenght=max_size)
+            None => println!("{}", file.name())
         }
     }
     println!("");
