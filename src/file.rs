@@ -1,7 +1,7 @@
 extern crate time;
 extern crate libc;
 
-use option;
+use option::*;
 
 use std::os::unix::fs::PermissionsExt;
 use std::os::unix::fs::MetadataExt;
@@ -101,20 +101,23 @@ fn get_username(uid: u32) -> String {
 }
 
 impl File {
-    pub fn new(file: std::fs::DirEntry) -> File {
+    pub fn new(file: std::fs::DirEntry, options: u8) -> File {
         if let Ok(data) = file.metadata() {
             return File {
                 name: file.file_name().to_string_lossy().into_owned(),
-                permissions: read_permission(&data),
-                time: time::strftime(
+                permissions: if option_l(options) || option_r(options)
+				{ read_permission(&data) } else { String::new() },
+                time: if option_l(options) { time::strftime(
                     "%b %d %R",
                     &time::at_utc(time::Timespec::new(data.mtime(), 0)),
-                ).unwrap(),
+                ).unwrap() } else { String::new() },
                 block: data.blocks(),
                 nlink: data.nlink(),
                 size: data.len(),
-                owner: get_username(data.uid()),
-                group: get_groupename(data.gid()),
+                owner: if option_l(options) { get_username(data.uid()) }
+				else { String::new() },
+                group: if option_l(options) { get_groupename(data.gid()) }
+				else {String::new() },
                 modified: data.mtime(),
             };
         } else {
@@ -170,15 +173,15 @@ impl File {
 
     pub fn cmp(&self, f: &File, options: u8) -> std::cmp::Ordering {
         let mut rslt: std::cmp::Ordering = std::cmp::Ordering::Equal;
-        if option::option_t(options) {
+        if option_t(options) {
             rslt = f.modified.cmp(&self.modified);
-        } else if option::option_ss(options) {
+        } else if option_ss(options) {
             rslt = f.size.cmp(&self.size);
         }
         if rslt == std::cmp::Ordering::Equal {
             rslt = self.name.cmp(&f.name);
         }
-        if option::option_r(options) {
+        if option_r(options) {
             return rslt.reverse();
         }
         rslt

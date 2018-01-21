@@ -15,16 +15,16 @@ fn read_path(path: PathBuf, options: u8) -> () {
 
 	match std::fs::read_dir(path.as_path()) {
 		Ok(dir) => {
-			let mut files: Vec<file::File> = std::vec::Vec::new();
+			let mut files: Vec<file::File> = Vec::new();
 			println!("{}:", path.display());
 			for file in dir {
 				if let Ok(file) = file {
 					if file.file_name().to_string_lossy().into_owned().starts_with(".") {
 						if option::option_a(options) {
-							files.push(file::File::new(file));
+							files.push(file::File::new(file, options));
 						}
 					} else {
-						files.push(file::File::new(file));
+						files.push(file::File::new(file, options));
 					}
 				}
 			}
