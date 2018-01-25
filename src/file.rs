@@ -105,7 +105,7 @@ impl File {
         if let Ok(data) = file.metadata() {
             return File {
                 name: file.file_name().to_string_lossy().into_owned(),
-                permissions: if option_l(options) || option_r(options)
+                permissions: if option_l(options) || option_rr(options)
 				{ read_permission(&data) } else { String::new() },
                 time: if option_l(options) { time::strftime(
                     "%b %d %R",

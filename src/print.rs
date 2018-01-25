@@ -118,14 +118,9 @@ fn print_big(files: Vec<file::File>, old_path: PathBuf, options: u8) -> Vec<Path
 }
 
 pub fn print_file(files: Vec<file::File>, old_path: PathBuf, options: u8) -> Vec<PathBuf> {
-
     if option::option_l(options) {
-        let ret = print_big(files, old_path, options);
-        println!("");
-        ret
+        print_big(files, old_path, options)
     } else {
-        let ret = print_small(files, old_path, options);
-        println!("");
-        ret
+        print_small(files, old_path, options)
     }
 }

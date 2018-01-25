@@ -11,12 +11,11 @@ pub mod option;
 pub mod print;
 
 fn read_path(path: PathBuf, options: u8) -> () {
-    let new_paths;
+	let new_paths;
 
 	match std::fs::read_dir(path.as_path()) {
 		Ok(dir) => {
 			let mut files: Vec<file::File> = Vec::new();
-			println!("{}:", path.display());
 			for file in dir {
 				if let Ok(file) = file {
 					if file.file_name().to_string_lossy().into_owned().starts_with(".") {
@@ -30,11 +29,16 @@ fn read_path(path: PathBuf, options: u8) -> () {
 			}
 			files.sort_by(|a, b| a.cmp(b, options));
 			new_paths = print::print_file(files, path, options);
-            if option::option_rr(options) {
-                for path in new_paths {
-                    read_path(path, options);
-                }
-            }
+			if option::option_rr(options) {
+				let len = new_paths.len();
+				for (index, path) in new_paths.iter().enumerate() {
+					println!("{}:", path.to_str().unwrap_or("???"));
+					read_path(path.to_path_buf(), options);
+					if index < len - 1 {
+						println!("");
+					}
+				}
+			}
 		}
 		Err(err) => {
 			eprintln!("ls-rs: cannot access {:?}: {}", path, err.description());
@@ -50,7 +54,14 @@ fn main() {
 	if paths.is_empty() {
 		paths.push(PathBuf::from("./"));
 	}
-	for path in paths {
-		read_path(path, options);
+	let len = paths.len();
+	for (index, path) in paths.iter().enumerate() {
+		if len > 1 {
+			println!("{}:", path.to_str().unwrap_or("???"));
+		}
+		read_path(path.to_path_buf(), options);
+		if index + 1 < len {
+			println!("");
+		}
 	}
 }
